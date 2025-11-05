@@ -6,7 +6,7 @@ ARG SEED="insecure_default_seed"
 
 RUN install -d -m 0700 /challenge/
 COPY setup-challenge.py /challenge/setup-challenge.py
-RUN python3 /challenge/config-builder.py
+RUN python3 /challenge/setup-challenge.py
 
 WORKDIR /app
 COPY ./main.py /app/main.py

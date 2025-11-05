@@ -265,4 +265,5 @@ cmgr playtest # slow -- it does the actual build
 ## Next Steps
 
 - Look at example problems.
+- Set debugging by enabling logging, e.g., `CMGR_LOGGING=info cmgr playtest <challenge>`
 - Create, play test, iterate.
