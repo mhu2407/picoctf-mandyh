@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>CPA Semantic Security Game</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2em;
+    }
+
+    .explanation {
+      background: #f0f0f0;
+      padding: 1em;
+      border-radius: 8px;
+      margin-bottom: 2em;
+    }
+
+    .log {
+      margin-top: 1em;
+      border-top: 1px solid #ccc;
+      padding-top: 1em;
+    }
+
+    #cipher-log li {
+      margin-bottom: 0.25em;
+      font-family: monospace;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>CPA Semantic Security Game</h1>
+
+  <div class="explanation">
+    <p>Welcome to the <strong>Chosen Plaintext Attack (CPA)</strong> semantic security game!</p>
+    <p>Your goal is to guess whether the encryption oracle is using your first or second message.</p>
+    <p>
+      Each round:
+    <ul>
+      <li>You send two equal-length plaintexts: <code>m₀</code> and <code>m₁</code>.</li>
+      <li>The server chooses a random bit <code>b ∈ {0, 1}</code> and encrypts <code>m_b</code>.</li>
+      <li>You receive the ciphertext of <code>m_b</code> and try to guess which one it was.</li>
+    </ul>
+    </p>
+    <p>If you guess right, you gain a point. Wrong, you lose one. Reach 10 points to win the flag!</p>
+    <p>
+      📖 <a href="https://www.cs.purdue.edu/homes/ninghui/courses/526_Fall13/handouts/526_topic04.pdf" target="_blank">What is
+        Semantic Security?</a>
+    </p>
+  </div>
+
+  <div><strong>Current Score:</strong> <span id="score">0</span></div>
+
+  <form id="encrypt-form">
+    <p>
+      <label>Message 0: <input type="text" id="m0" required></label><br>
+      <label>Message 1: <input type="text" id="m1" required></label><br>
+      <button type="submit">Encrypt</button>
+    </p>
+  </form>
+
+  <p>
+    <button onclick="solve(0)">I think it's Message 0</button>
+    <button onclick="solve(1)">I think it's Message 1</button>
+  </p>
+
+  <div id="result" style="margin-top: 1em; font-weight: bold;"></div>
+
+  <div class="log">
+    <h3>Encryption Log</h3>
+    <ol id="cipher-log"></ol>
+  </div>
+
+  <script>
+    let log = [];
+
+    async function updateScore() {
+      const res = await fetch("/status");
+      const json = await res.json();
+      document.getElementById("score").innerText = json.score;
+    }
+
+    async function encrypt(e) {
+      e.preventDefault();
+      const m0 = document.getElementById("m0").value;
+      const m1 = document.getElementById("m1").value;
+      const res = await fetch("/encrypt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ m0, m1 })
+      });
+      const json = await res.json();
+      if (json.error) {
+        document.getElementById("result").innerText = json.error;
+      } else {
+        document.getElementById("result").innerText = "Ciphertext: " + json.ciphertext;
+        log.push(`encrypt("${m0}", "${m1}") → ${json.ciphertext}`);
+        updateLog();
+      }
+      updateScore();
+    }
+
+    async function solve(guess) {
+      const res = await fetch("/solve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ guess })
+      });
+      const json = await res.json();
+      if (json.flag) {
+        document.getElementById("result").innerText = "🎉 FLAG: " + json.flag;
+      } else {
+        document.getElementById("result").innerText = "Guess Recorded. Your score is now: " + json.score;
+      }
+      updateScore();
+    }
+
+    function updateLog() {
+      const ul = document.getElementById("cipher-log");
+      ul.innerHTML = "";
+      log.slice(-10).forEach(entry => {
+        const li = document.createElement("li");
+        li.textContent = entry;
+        ul.appendChild(li);
+      });
+    }
+
+    document.getElementById("encrypt-form").addEventListener("submit", encrypt);
+    updateScore();
+  </script>
+</body>
+
+</html>

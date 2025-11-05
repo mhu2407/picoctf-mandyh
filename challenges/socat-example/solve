@@ -1,0 +1,35 @@
+#!/usr/bin/env python2
+
+import socket
+
+from sys import argv
+
+s = socket.create_connection((argv[1], int(argv[2])))
+s2 = socket.create_connection((argv[1], int(argv[2])))
+
+def recv_until(st, s=s):
+  buf = ''
+  while st not in buf:
+    buf += s.recv(1)
+  return buf
+
+recv_until("Fingerprint: ")
+n = int(recv_until("\n")[:-1],16)
+
+def sign(num):
+  s.send("1\n")
+  s.send("%x\n"%num)
+  recv_until("Signature: ")
+  return int(recv_until("\n")[:-1],16)
+
+recv_until(">", s=s2)
+s2.send("2\n")
+recv_until("Challenge: ", s=s2)
+c = int(recv_until("\n", s=s2)[:-1],16)
+sig = sign(c)
+s2.send("%x\n"%sig)
+
+recv_until("Here is the flag: ", s=s2)
+flag = recv_until("\n", s=s2)[:-1]
+
+print flag.strip()
