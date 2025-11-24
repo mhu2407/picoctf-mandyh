@@ -90,9 +90,9 @@ func main() {
 	}
 	fmt.Printf("Ciphertext:%s\n\n", hex.EncodeToString(ciphertext))
 
-	checkmate, err := os.ReadFile("board_target.txt")
+	checkmate, err := os.ReadFile("checkmate.txt")
 	if err != nil {
-		log.Fatalf("failed to read board_target.txt: %s", err)
+		log.Fatalf("failed to read checkmate.txt: %s", err)
 	}
 
 	flag, err := os.ReadFile("flag.txt")
@@ -126,8 +126,8 @@ func main() {
 	}
 
 	if bytesEqual(plaintext, checkmate) {
-		fmt.Printf("Here is your flag:\n%s\n", flag)
+		fmt.Printf("You won! Here is your flag:\n%s\n", flag)
 	} else {
-		fmt.Printf("You did not get checkmate\n")
+		fmt.Printf("You did not get checkmate :(\n")
 	}
 }

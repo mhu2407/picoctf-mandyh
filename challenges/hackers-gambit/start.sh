@@ -1,6 +1,6 @@
 #!/bin/sh
-
 set -e
 
-socat tcp-listen:3000,reuseaddr,fork SYSTEM:"go run challenge.go"
+PORT=3000
 
+exec socat TCP-LISTEN:${PORT},reuseaddr,fork EXEC:/app/server,pty,stderr
